@@ -1,0 +1,33 @@
+
+name: Docker Compose CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build Docker image
+      run: docker build -t flask-app .
+
+    - name: Run container (detached)
+      run: docker run -d -p 5000:5000 --name flask-app flask-app
+
+    - name: Test app is running
+      run: |
+        sleep 5
+        curl --fail http://localhost:5000 || (docker logs flask-app && exit 1)
+
+
+
